@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EU Sessions &amp; Conversion — Last 30 Days</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #f5f4f0;
+    --surface:  #ffffff;
+    --border:   #e2e0d8;
+    --text:     #1a1917;
+    --muted:    #7a7870;
+    --green:    #1a6644;
+    --green-bg: #e8f5ee;
+    --amber:    #8a5a00;
+    --amber-bg: #fff4d6;
+    --red:      #8a1f1f;
+    --red-bg:   #fdeaea;
+    --gray-bg:  #f0eeea;
+    --accent:   #1a1917;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 32px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+
+  header p {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .summary {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  .scard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    min-width: 160px;
+  }
+
+  .scard .lbl {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .scard .val {
+    font-family: 'DM Mono', monospace;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .controls span {
+    font-size: 12px;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+
+  .filter-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { border-color: #aaa; color: var(--text); }
+
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  thead th.sortable { cursor: pointer; }
+  thead th.sortable:hover { color: var(--text); background: #f3f1ec; }
+  thead th.sorted { color: var(--text); }
+  thead th .sort-arrow { margin-left: 5px; font-size: 10px; opacity: 0.35; }
+  thead th.sorted .sort-arrow { opacity: 1; }
+
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  thead th {
+    background: #faf9f6;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  thead th:hover { color: var(--text); }
+  thead th.num { text-align: right; }
+  thead th .sort-arrow { margin-left: 4px; opacity: 0.4; }
+  thead th.sorted .sort-arrow { opacity: 1; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #faf9f6; }
+
+  td {
+    padding: 11px 16px;
+    vertical-align: middle;
+  }
+
+  td.rank {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    width: 32px;
+    text-align: right;
+    padding-right: 8px;
+  }
+
+  td.country { font-weight: 500; }
+
+  td.num {
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+  }
+
+  .bars { width: 140px; padding-left: 8px; }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+
+  .bar-row:last-child { margin-bottom: 0; }
+
+  .bar-label {
+    font-size: 10px;
+    color: var(--muted);
+    width: 14px;
+    flex-shrink: 0;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 5px;
+    background: #ede9e0;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  .b-strong { background: var(--green-bg);  color: var(--green); }
+  .b-warn   { background: var(--amber-bg);  color: var(--amber); }
+  .b-low    { background: var(--red-bg);    color: var(--red); }
+  .b-small  { background: var(--gray-bg);   color: var(--muted); }
+  .b-ok     { background: #edf0f5; color: #4a5568; }
+  .b-uk     { background: #deeaf8; color: #185fa5; }
+  .b-noneu  { background: #f0ebff; color: #6b46c1; }
+
+
+  tbody tr.data-row { cursor: pointer; }
+  tbody tr.data-row:hover td { background: #faf9f6; }
+  tbody tr.detail-row td { padding: 0; background: #faf9f6; border-bottom: 1px solid #e2e0d8; }
+  .detail-inner { padding: 16px 20px 20px 52px; }
+  .detail-verdict { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #7a7870; margin-bottom: 6px; }
+  .detail-text { font-size: 13px; line-height: 1.7; color: #1a1917; margin-bottom: 12px; }
+  .detail-recs { list-style: none; padding: 0; margin: 0; }
+  .detail-recs li { font-size: 12.5px; line-height: 1.6; color: #1a1917; padding: 5px 0 5px 18px; border-top: 0.5px solid #e2e0d8; position: relative; }
+  .detail-recs li:first-child { border-top: none; }
+  .detail-recs li::before { content: '→'; position: absolute; left: 0; color: #7a7870; }
+  .expand-icon { font-size: 11px; color: #aaa; margin-left: 6px; transition: transform 0.2s; display: inline-block; }
+  .expanded .expand-icon { transform: rotate(90deg); }
+
+
+  td.fin-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12px; }
+  .gp-high { color: #1a6644; font-weight: 500; }
+  .gp-low  { color: #c0392b; }
+  .ad-high { color: #c0392b; }
+  .ad-low  { color: #1a6644; }
+  td.index-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12px; }
+  td.missed-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12px; }
+  .idx-high { color: #1a6644; font-weight: 500; }
+  .idx-low  { color: #c0392b; font-weight: 500; }
+  .idx-mid  { color: #7a7870; }
+  .missed-pos { color: #1a6644; font-weight: 500; }
+  .missed-neg { color: #c0392b; font-weight: 500; }
+  .missed-neu { color: #7a7870; }
+  .no-results {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  footer {
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Enveseur &nbsp;·&nbsp; PostalPackaging.com &nbsp;·&nbsp; Envelopes.co.uk</h1>
+  <p>Sessions &amp; conversion rate by country &nbsp;·&nbsp; Last 30 days &nbsp;·&nbsp; All stores</p>
+</header>
+
+<div class="summary">
+  <div class="scard"><div class="lbl">Total sessions</div><div class="val">108,876</div></div>
+  <div class="scard"><div class="lbl">Rows</div><div class="val">31</div></div>
+  <div class="scard"><div class="lbl">Weighted avg conv.</div><div class="val" id="wavg">—</div></div>
+  <div class="scard"><div class="lbl">Visible rows</div><div class="val" id="visible-count">27</div></div>
+</div>
+
+<div class="controls">
+  <span>Filter:</span>
+  <button class="filter-btn active" data-f="all">All 31</button>
+  <button class="filter-btn" data-f="strong">Strong</button>
+  <button class="filter-btn" data-f="warn">Under-performing</button>
+  <button class="filter-btn" data-f="low">Low conv.</button>
+  <button class="filter-btn" data-f="small">Small volume</button>
+  <button class="filter-btn" id="analysis-btn" data-f="__analysis__" style="margin-left:auto; border-color:#1a1917; color:#1a1917;">Analysis ↗</button>
+  <button class="filter-btn" id="map-btn" style="border-color:#1a1917; color:#1a1917;">Map ↗</button>
+  <button class="filter-btn" id="strategy-btn" style="border-color:#1a1917; color:#1a1917; background:#1a1917; color:#fff;">Strategy ↗</button>
+
+</div>
+
+<div id="analysis-panel" style="display:none; background:#fff; border:1px solid #e2e0d8; border-radius:12px; padding:28px 32px; margin-bottom:24px; font-size:14px; line-height:1.7; color:#1a1917;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+    <div>
+      <h2 style="font-size:18px; font-weight:600; margin-bottom:4px;">Cross-market analysis</h2>
+      <p style="font-size:13px; color:#7a7870;">Sessions, conversion, population index and ecommerce context</p>
+    </div>
+    <button id="close-analysis" style="font-family:'DM Sans',sans-serif; font-size:12px; padding:5px 12px; border-radius:20px; border:1px solid #e2e0d8; background:#f5f4f0; color:#7a7870; cursor:pointer;">Close ✕</button>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px;">
+    <div style="background:#f5f4f0; border-radius:8px; padding:16px 20px;">
+      <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:#7a7870; margin-bottom:10px;">Sessions per million population</div>
+      <div id="pop-bars"></div>
+    </div>
+    <div style="background:#f5f4f0; border-radius:8px; padding:16px 20px;">
+      <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:#7a7870; margin-bottom:10px;">Ecommerce penetration vs your conversion</div>
+      <div id="ecomm-bars"></div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+    <div>
+      <h3 style="font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:#7a7870; margin-bottom:12px;">🟢 Outperforming expectation</h3>
+      <div style="font-size:13.5px; line-height:1.75;">
+        <p style="margin-bottom:10px;"><strong>Slovakia (823 sessions/M, 3.55% conv)</strong> — by far the highest session volume relative to population of any EU market. At 5.5M people this is remarkable reach. Likely driven by strong SEO or existing brand recognition from the Slovak warehouse operation. Conversion is borderline but given the volume the absolute order count is solid.</p>
+        <p style="margin-bottom:10px;"><strong>Ireland (553 sessions/M, 7.05% conv)</strong> — small population (5.1M) but exceptional on both dimensions. English-language market, high SME density, very high ecommerce maturity (91%). One of the highest-value markets per session across the entire dataset.</p>
+        <p style="margin-bottom:10px;"><strong>Belgium (250 sessions/M, 7.42% conv)</strong> — best conversion rate of any country with meaningful volume. Brussels and Antwerp are major commercial hubs with dense B2B activity. Bilingual market (FR/NL) appears to be well served.</p>
+        <p style="margin-bottom:10px;"><strong>Netherlands (412 sessions/M, 6.85% conv)</strong> — highest ecommerce penetration in the EU (93%). Strong conversion matches expectations. Small population but digitally sophisticated buyers with low friction.</p>
+        <p style="margin-bottom:10px;"><strong>Czechia (473 sessions/M, 4.16% conv)</strong> — strong sessions per capita and above-average conversion. Czech ecommerce is mature and B2B packaging demand is established.</p>
+      </div>
+    </div>
+
+    <div>
+      <h3 style="font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:#7a7870; margin-bottom:12px;">🔴 Underperforming relative to potential</h3>
+      <div style="font-size:13.5px; line-height:1.75;">
+        <p style="margin-bottom:10px;"><strong>Germany (219 sessions/M, 1.56% conv)</strong> — largest EU economy and your top market by raw sessions, yet converts at less than a third of France or Netherlands. German buyers are highly price-sensitive, prefer invoice/BNPL payment (Klarna, PayPal Rechnung), and engage in extensive comparison shopping before purchasing. The browse-to-buy gap is a structural market behaviour, not necessarily a product issue — but it warrants investigation of checkout friction and payment options.</p>
+        <p style="margin-bottom:10px;"><strong>Italy (206 sessions/M, 2.66% conv)</strong> — large population, reasonable session volume, but conversion lags northern peers. Italian B2B procurement has traditionally been slower to digitise; trade relationships and invoicing terms matter more. May require localised trust signals.</p>
+        <p style="margin-bottom:10px;"><strong>Austria (200 sessions/M, 2.91% conv)</strong> — German-speaking, high digital maturity (83%), yet conversion is well below expectation and below Germany-equivalent peers. Shares Germany's browse-compare behaviour. Worth treating as a distinct market rather than a proxy for Germany.</p>
+        <p style="margin-bottom:10px;"><strong>Sweden (276 sessions/M, 3.51% conv)</strong> — high ecommerce maturity (89%) but conversion below Nordic peers Denmark (5.95%) and Finland (3.23%). May reflect stronger local competition in the Swedish packaging market.</p>
+      </div>
+    </div>
+
+    <div>
+      <h3 style="font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:#7a7870; margin-bottom:12px;">🔵 Untapped potential</h3>
+      <div style="font-size:13.5px; line-height:1.75;">
+        <p style="margin-bottom:10px;"><strong>Romania (3 sessions/M)</strong> — 19 million people, one of the EU's largest populations, yet only 57 sessions. Ecommerce penetration is lower (61%) but growing rapidly. The near-zero visibility here is a gap worth monitoring as the market matures.</p>
+        <p style="margin-bottom:10px;"><strong>Greece (2.8 sessions/M)</strong> — 10.4M population, low ecommerce maturity (62%) but the session count is almost non-existent. Likely a combination of low organic search visibility and limited local market development.</p>
+        <p style="margin-bottom:10px;"><strong>Bulgaria (6.7 sessions/M, 0% conv)</strong> — 6.1M population, lowest ecommerce penetration in the dataset (57%). Zero conversions but the sessions are there at a meaningful rate — a localisation or trust issue rather than a demand issue may explain the drop-off.</p>
+        <p style="margin-bottom:10px;"><strong>Poland (225 sessions/M, 2.29% conv)</strong> — strong sessions but below-average conversion. At 38M people and rapidly growing ecommerce (79% penetration), this is a large market that should be converting better. Price sensitivity and local competition (Polish packaging suppliers) are likely factors.</p>
+      </div>
+    </div>
+
+    <div>
+      <h3 style="font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:#7a7870; margin-bottom:12px;">🇬🇧 UK store comparison</h3>
+      <div style="font-size:13.5px; line-height:1.75;">
+        <p style="margin-bottom:10px;"><strong>Envelopes.co.uk (5.58% conv)</strong> — strong performance in a mature, highly competitive market. UK ecommerce penetration is 92%. The brand is clearly established and converting well against a demanding audience.</p>
+        <p style="margin-bottom:10px;"><strong>PostalPackaging.com (2.55% conv)</strong> — same UK market but significantly lower conversion. Both stores share the same population and ecommerce context, so the gap (5.58% vs 2.55%) points to product mix, audience intent, or brand recognition differences rather than market conditions. This divergence is worth investigating — if PP visitors are less purchase-ready, the funnel entry point may differ (broader keywords, less transactional intent).</p>
+        <p style="margin-bottom:10px;"><strong>Session volume</strong>: Envelopes.co.uk at 7,728 sessions also substantially outpaces PP at 3,335 — suggesting either stronger SEO/organic reach or a more established customer base.</p>
+      </div>
+    </div>
+
+    <div style="grid-column: 1 / -1;">
+      <h3 style="font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:#7a7870; margin-bottom:12px;">📊 Methodology note</h3>
+      <div style="font-size:13px; line-height:1.75; color:#7a7870;">
+        <p>Population data: 2024 estimates (Eurostat). Ecommerce penetration figures: approximate % of adults making online purchases regularly, drawn from Eurostat Digital Economy reports and industry surveys (2023–24). Sessions per million provides a normalised reach index — a high figure indicates strong organic or paid visibility relative to market size. Conversion benchmarks: EU ecommerce average sits around 2–3%; B2B-oriented stores with returning customers typically exceed this. Countries with under 100 sessions should be treated as statistically unreliable for conversion rate analysis. Small-volume countries (Croatia, Slovenia, Baltics, Malta, Cyprus, Luxembourg) have meaningful population-normalised sessions in some cases but insufficient volume to draw firm conversion conclusions.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+<div id="strategy-panel" style="display:none; background:#fff; border:1px solid #e2e0d8; border-radius:12px; padding:28px 32px; margin-bottom:24px; font-size:14px; line-height:1.7;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;">
+    <div>
+      <h2 style="font-size:20px; font-weight:600; margin-bottom:4px; letter-spacing:-0.3px;">Strategic conclusions &amp; recommendations</h2>
+      <p style="font-size:13px; color:#7a7870;">PPC, SEO and market prioritisation — based on sessions, conversion, AOV, GP and ad efficiency</p>
+    </div>
+    <button id="close-strategy" style="font-family:'DM Sans',sans-serif; font-size:12px; padding:5px 12px; border-radius:20px; border:1px solid #e2e0d8; background:#f5f4f0; color:#7a7870; cursor:pointer;">Close ✕</button>
+  </div>
+
+  <div style="background:#f5f4f0; border-radius:8px; padding:16px 20px; margin-bottom:24px; font-size:13px; line-height:1.75; color:#4a5568;">
+    <strong style="color:#1a1917;">How to read this:</strong> The financial data reveals that conversion rate alone is a misleading performance indicator. Germany converts poorly but delivers €63.60 GP per order — the highest of any market. Ireland converts well and delivers €43.90 GP per order at only €6.30 ad spend per order — the most efficient market in the portfolio. GB (Envelopes.co.uk) converts reasonably but returns only €22.10 GP per order while spending €12.90 per order on ads — the least efficient major market. The strategic priorities below are based on GP per order and ad efficiency, not conversion rate.
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px;">
+
+    <div style="border:1px solid #e2e0d8; border-radius:10px; padding:18px 20px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#1a6644;"></span>
+        <span style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:#1a6644;">Tier 1 — Scale up immediately</span>
+      </div>
+      <p style="font-size:13px; margin-bottom:10px;"><strong>Ireland</strong> — €43.90 GP/order, €6.30 ad/order. Your most efficient market by a significant margin. Only 199 orders and 2,819 sessions from a population of 5.1M with 91% ecommerce penetration. This market is being dramatically underinvested. Doubling PPC budget here would likely yield the best return of any spend in the portfolio. SEO investment in Irish-specific keywords would compound this further.</p>
+      <p style="font-size:13px; margin-bottom:10px;"><strong>Germany</strong> — €63.60 GP/order, the highest in the portfolio. Reframe Germany as a premium acquisition market: accept a higher cost-per-click and higher ad spend per order because each order is worth nearly three times a GB order. Target high-intent, transactional keywords rather than broad packaging terms. Consider RLSA (remarketing lists for search) to recapture the comparison shoppers who browse without converting. Payment method investment (Rechnung/SEPA) is the single highest-leverage localisation fix.</p>
+      <p style="font-size:13px;"><strong>Spain</strong> — €40.60 GP/order, €7.90 ad/order, 596 orders. Home market performing well. Maintain and grow — particularly through account-based retention of existing B2B customers rather than pure acquisition spend.</p>
+    </div>
+
+    <div style="border:1px solid #e2e0d8; border-radius:10px; padding:18px 20px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#c47a00;"></span>
+        <span style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:#c47a00;">Tier 2 — Optimise and grow</span>
+      </div>
+      <p style="font-size:13px; margin-bottom:10px;"><strong>France</strong> — €35.00 GP/order, 765 orders, highest volume. Strong but GP/order is lower than Germany, Ireland or Spain. The priority here is protecting GP margin rather than growing volume — understand why GP/order is lower than Spain despite similar conversion rates. Review product mix and discount levels in France.</p>
+      <p style="font-size:13px; margin-bottom:10px;"><strong>Italy</strong> — €45.50 GP/order (second only to Germany) but €12.50 ad/order — high acquisition cost eating into an otherwise excellent market. Reducing ad spend per order through better keyword targeting or improving organic visibility would make Italy considerably more profitable. The conversion rate issue is partly structural (Italian B2B buying behaviour) but the GP/order when you do convert is very strong.</p>
+      <p style="font-size:13px;"><strong>Portugal</strong> — €28.30 GP/order, only €7.20 ad/order. Quietly efficient. 157 orders suggests it is underinvested relative to its efficiency. Worth modest budget increase and SEO attention.</p>
+    </div>
+
+    <div style="border:1px solid #e2e0d8; border-radius:10px; padding:18px 20px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#c0392b;"></span>
+        <span style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:#c0392b;">Tier 3 — Fix before scaling</span>
+      </div>
+      <p style="font-size:13px; margin-bottom:10px;"><strong>GB Envelopes.co.uk</strong> — The most important finding in this dataset. €22.10 GP/order with €12.90 ad/order is the worst ad efficiency of any major market. You are spending more on ads per order in GB than anywhere else, to acquire orders worth less than anywhere else. The strategic answer is not more PPC — it is SEO. France generates 765 orders at €9.30 ad/order; GB generates 754 orders at €12.90. The session gap (13,547 FR vs 7,728 GB) is the entire explanation. Closing that gap through organic search would transform the GB GP position without increasing ad spend.</p>
+      <p style="font-size:13px; margin-bottom:10px;"><strong>Netherlands</strong> — Good conversion (6.85%) but only €24.50 GP/order and €10.60 ad/order. High delivery costs (€3,308 on €18k revenue) are compressing margin. Review delivery cost structure for NL.</p>
+      <p style="font-size:13px;"><strong>Belgium &amp; Czechia</strong> — Both showing €11+ ad/order against modest GP/order. Keyword targeting review recommended — likely broad match terms driving unqualified traffic.</p>
+    </div>
+
+    <div style="border:1px solid #e2e0d8; border-radius:10px; padding:18px 20px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#185fa5;"></span>
+        <span style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:#185fa5;">PPC &amp; SEO priorities summary</span>
+      </div>
+      <p style="font-size:13px; margin-bottom:8px;"><strong>Increase PPC budget:</strong> Ireland (highest priority), Germany (accept higher CPC for premium orders), Portugal (efficient, underinvested)</p>
+      <p style="font-size:13px; margin-bottom:8px;"><strong>Reduce/reallocate PPC:</strong> GB Envelopes (replace with SEO investment), Belgium, Czechia (tighten keyword match types)</p>
+      <p style="font-size:13px; margin-bottom:8px;"><strong>SEO priorities:</strong> GB Envelopes (biggest single opportunity — closing the session gap with France would add ~€10k+ GP/month at current rates), Romania (19M population, near-zero visibility), Greece (10M population, invisible), Germany (organic rankings reduce reliance on high-CPC paid terms)</p>
+      <p style="font-size:13px; margin-bottom:8px;"><strong>Localisation fixes that will move the needle:</strong> German payment methods (Rechnung/SEPA), Dutch iDEAL, Danish MobilePay, Norwegian Vipps, Polish PLN pricing display</p>
+      <p style="font-size:13px;"><strong>Watch closely:</strong> Norway (new launch — benchmark now and track monthly), Italy (strong GP/order but high ad cost — optimisation opportunity)</p>
+    </div>
+
+  </div>
+
+  <div style="background:#f5f4f0; border-radius:8px; padding:14px 18px; font-size:12px; color:#7a7870;">
+    <strong style="color:#1a1917;">Data note:</strong> Financial figures are TY (this year) period. Sessions and conversion data are last 30 days from Shopify Analytics. GP = Net Revenue − Delivery costs − Ad spend. Countries without financial data (Bulgaria, Estonia, Slovenia, Lithuania, Latvia, Luxembourg, Malta, Cyprus, Switzerland, some others) have insufficient order volume to report meaningfully.
+  </div>
+</div>
+
+<div id="map-panel" style="display:none; background:#fff; border:1px solid #e2e0d8; border-radius:12px; padding:28px 32px; margin-bottom:24px;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+    <div>
+      <h2 style="font-size:18px; font-weight:600; margin-bottom:4px;">Geographic view</h2>
+      <p style="font-size:13px; color:#7a7870;">Shaded by selected metric — hover a country for details</p>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <select id="map-metric" style="font-family:'DM Sans',sans-serif; font-size:12px; border:1px solid #e2e0d8; border-radius:6px; padding:5px 10px; background:#f5f4f0; color:#1a1917; cursor:pointer;">
+        <option value="conv">Conversion rate</option>
+        <option value="sessions">Sessions</option>
+        <option value="sessPerM">Sessions per million pop.</option>
+      </select>
+      <button id="close-map" style="font-family:'DM Sans',sans-serif; font-size:12px; padding:5px 12px; border-radius:20px; border:1px solid #e2e0d8; background:#f5f4f0; color:#7a7870; cursor:pointer;">Close ✕</button>
+    </div>
+  </div>
+  <div id="map-tooltip" style="display:none; position:fixed; background:#1a1917; color:#fff; font-size:12px; padding:8px 12px; border-radius:6px; pointer-events:none; z-index:1000; line-height:1.5;"></div>
+  <div id="map-container" style="width:100%; background:#f5f4f0; border-radius:8px; overflow:hidden;"></div>
+  <div id="map-legend" style="margin-top:16px; padding:12px 16px; background:#f5f4f0; border-radius:8px;">
+    <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:#7a7870; margin-bottom:8px;" id="legend-label">Conversion rate</div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:11px; color:#7a7870; width:28px;">Low</span>
+      <div id="legend-gradient" style="flex:1; height:14px; border-radius:6px; background:linear-gradient(to right, #dc3c3c, #ef9f27, #1d9e75);"></div>
+      <span style="font-size:11px; color:#7a7870; width:28px; text-align:right;">High</span>
+    </div>
+    <div id="legend-ticks" style="display:flex; justify-content:space-between; margin-top:4px; font-size:11px; font-family:'DM Mono',monospace; color:#7a7870; padding:0 38px;"></div>
+  </div>
+  <p style="font-size:11px; color:#bbb; margin-top:8px;">Grey = no data / outside dataset. Overseas territories excluded from France/Spain/Portugal shapes.</p>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:32px;"></th>
+        <th class="sortable sorted" data-col="country">Country <span class="sort-arrow">↕</span></th>
+        <th class="sortable" data-col="store">Store <span class="sort-arrow">↕</span></th>
+        <th class="sortable num" data-col="sessions">Sessions <span class="sort-arrow">↕</span></th>
+        <th class="sortable num" data-col="pop" title="Approximate population (millions, 2024 estimate)">Pop. (M) <span class="sort-arrow">↕</span></th>
+        <th class="sortable num" data-col="conv">Conv. rate <span class="sort-arrow">↕</span></th>
+        <th class="sortable num" data-col="orders" title="Orders this period">Orders <span class="sort-arrow">↕</span></th>
+        <th class="sortable num" data-col="aov" title="Average order value (€)">AOV <span class="sort-arrow">↕</span></th>
+        <th class="sortable num" data-col="gp" title="Gross profit after delivery and ad costs (€)">GP (€) <span class="sort-arrow">↕</span></th>
+        <th class="sortable num" data-col="gpPerOrd" title="GP per order (€)">GP/Ord <span class="sort-arrow">↕</span></th>
+        <th class="sortable num" data-col="adCost" title="Total ad spend (€)">Ad Cost <span class="sort-arrow">↕</span></th>
+        <th class="sortable num" data-col="adPerOrd" title="Ad spend per order (€) — lower is more efficient">Ad/Ord <span class="sort-arrow">↕</span></th>
+        <th class="sortable num" data-col="perfIndex" title="Conversion rate relative to weighted average across all markets. 100 = average.">Perf. index <span class="sort-arrow">↕</span></th>
+        <th class="sortable num" data-col="missedOrders" title="Orders gained (+) or missed (-) vs weighted average conversion rate">+/- Orders <span class="sort-arrow">↕</span></th>
+        <th class="bars">Volume / Conv.</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+      <tr><td colspan="16" class="no-results">Loading…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>Generated from Shopify Analytics &nbsp;·&nbsp; Enveseur</footer>
+
+<script>
+const fin = {
+  'France||EU stores': { orders:765, net:39398, adCost:7146, gp:26764, aov:52, adPerOrd:9.3, gpPerOrd:35.0 },
+  'Spain||EU stores': { orders:596, net:35576, adCost:4709, gp:24192, aov:60, adPerOrd:7.9, gpPerOrd:40.6 },
+  'Germany||EU stores': { orders:298, net:28248, adCost:3185, gp:18956, aov:95, adPerOrd:10.7, gpPerOrd:63.6 },
+  'United Kingdom||Envelopes.co.uk': { orders:754, net:31450, adCost:9698, gp:16627, aov:42, adPerOrd:12.9, gpPerOrd:22.1 },
+  'Italy||EU stores': { orders:312, net:21710, adCost:3901, gp:14200, aov:70, adPerOrd:12.5, gpPerOrd:45.5 },
+  'Netherlands||EU stores': { orders:494, net:18070, adCost:5238, gp:12079, aov:37, adPerOrd:10.6, gpPerOrd:24.5 },
+  'United Kingdom||PostalPackaging.com': { orders:119, net:6177, adCost:1313, gp:3353, aov:52, adPerOrd:11.0, gpPerOrd:28.2 },
+  'Czechia||EU stores': { orders:203, net:7121, adCost:2278, gp:4040, aov:35, adPerOrd:11.2, gpPerOrd:19.9 },
+  'Ireland||EU stores': { orders:199, net:12173, adCost:1256, gp:8728, aov:61, adPerOrd:6.3, gpPerOrd:43.9 },
+  'Sweden||EU stores': { orders:98, net:4057, adCost:1008, gp:3143, aov:41, adPerOrd:10.3, gpPerOrd:32.1 },
+  'Poland||EU stores': { orders:185, net:6325, adCost:1832, gp:4123, aov:34, adPerOrd:9.9, gpPerOrd:22.3 },
+  'Slovakia||EU stores': { orders:154, net:5476, adCost:1518, gp:3290, aov:36, adPerOrd:9.9, gpPerOrd:21.4 },
+  'Belgium||EU stores': { orders:217, net:8338, adCost:2449, gp:5321, aov:38, adPerOrd:11.3, gpPerOrd:24.5 },
+  'Denmark||EU stores': { orders:115, net:3819, adCost:1229, gp:2781, aov:33, adPerOrd:10.7, gpPerOrd:24.2 },
+  'Austria||EU stores': { orders:46, net:2754, adCost:542, gp:1815, aov:57, adPerOrd:11.8, gpPerOrd:39.5 },
+  'Portugal||EU stores': { orders:157, net:7359, adCost:1123, gp:4449, aov:47, adPerOrd:7.2, gpPerOrd:28.3 },
+  'Hungary||EU stores': { orders:105, net:3219, adCost:540, gp:2447, aov:31, adPerOrd:5.1, gpPerOrd:23.3 },
+  'Finland||EU stores': { orders:58, net:2144, adCost:624, gp:1671, aov:37, adPerOrd:10.8, gpPerOrd:28.8 },
+  'Romania||EU stores': { orders:4, net:435, adCost:0, gp:374, aov:109, adPerOrd:0.0, gpPerOrd:93.5 },
+  'Latvia||EU stores': { orders:4, net:65, adCost:0, gp:86, aov:16, adPerOrd:0.0, gpPerOrd:21.5 },
+  'Croatia||EU stores': { orders:15, net:492, adCost:105, gp:401, aov:33, adPerOrd:7.0, gpPerOrd:26.7 },
+  'Switzerland||Non-EU': { orders:1, net:1, adCost:0, gp:6, aov:1, adPerOrd:0.0, gpPerOrd:6.0 },
+  'Luxembourg||EU stores': { orders:1, net:21, adCost:0, gp:27, aov:21, adPerOrd:0.0, gpPerOrd:27.0 },
+  'Slovenia||EU stores': { orders:12, net:1223, adCost:18, gp:985, aov:102, adPerOrd:1.5, gpPerOrd:82.1 },
+  'Lithuania||EU stores': { orders:4, net:134, adCost:65, gp:64, aov:34, adPerOrd:16.2, gpPerOrd:16.0 },
+  'Norway||Non-EU': { orders:3, net:155, adCost:0, gp:229, aov:52, adPerOrd:0.0, gpPerOrd:76.3 },
+};
+
+const data = [
+  { country: 'Germany', pop: 84.4,        store: 'EU stores',          sessions: 18460, conv: 1.56 },
+  { country: 'Spain', pop: 47.4,          store: 'EU stores',          sessions: 15093, conv: 4.12 },
+  { country: 'France', pop: 68.4,         store: 'EU stores',          sessions: 13547, conv: 5.49 },
+  { country: 'Italy', pop: 58.9,          store: 'EU stores',          sessions: 12112, conv: 2.66 },
+  { country: 'Poland', pop: 38.0,         store: 'EU stores',          sessions: 8537,  conv: 2.29 },
+  { country: 'Netherlands', pop: 17.9,    store: 'EU stores',          sessions: 7366,  conv: 6.85 },
+  { country: 'United Kingdom', pop: 67.7, store: 'Envelopes.co.uk',    sessions: 7728,  conv: 5.58 },
+  { country: 'Czechia', pop: 10.9,        store: 'EU stores',          sessions: 5159,  conv: 4.16 },
+  { country: 'Slovakia', pop: 5.5,       store: 'EU stores',          sessions: 4527,  conv: 3.55 },
+  { country: 'Portugal', pop: 10.2,       store: 'EU stores',          sessions: 3945,  conv: 4.05 },
+  { country: 'United Kingdom', pop: 67.7, store: 'PostalPackaging.com', sessions: 3335, conv: 2.55 },
+  { country: 'Belgium', pop: 11.7,        store: 'EU stores',          sessions: 2924,  conv: 7.42 },
+  { country: 'Sweden', pop: 10.5,         store: 'EU stores',          sessions: 2900,  conv: 3.51 },
+  { country: 'Ireland', pop: 5.1,        store: 'EU stores',          sessions: 2819,  conv: 7.05 },
+  { country: 'Hungary', pop: 9.7,        store: 'EU stores',          sessions: 2611,  conv: 4.02 },
+  { country: 'Denmark', pop: 5.9,        store: 'EU stores',          sessions: 1997,  conv: 5.95 },
+  { country: 'Austria', pop: 9.1,        store: 'EU stores',          sessions: 1821,  conv: 2.91 },
+  { country: 'Finland', pop: 5.5,        store: 'EU stores',          sessions: 1793,  conv: 3.23 },
+  { country: 'Croatia', pop: 3.9,        store: 'EU stores',          sessions: 568,   conv: 2.28 },
+  { country: 'Slovenia', pop: 2.1,       store: 'EU stores',          sessions: 470,   conv: 2.55 },
+  { country: 'Lithuania', pop: 2.8,      store: 'EU stores',          sessions: 259,   conv: 1.15 },
+  { country: 'Latvia', pop: 1.8,         store: 'EU stores',          sessions: 233,   conv: 1.71 },
+  { country: 'Estonia', pop: 1.4,        store: 'EU stores',          sessions: 77,    conv: 1.29 },
+  { country: 'Romania', pop: 19.0,        store: 'EU stores',          sessions: 57,    conv: 3.50 },
+  { country: 'Luxembourg', pop: 0.7,     store: 'EU stores',          sessions: 50,    conv: 2.00 },
+  { country: 'Bulgaria', pop: 6.1,       store: 'EU stores',          sessions: 41,    conv: 0.00 },
+  { country: 'Greece', pop: 10.4,         store: 'EU stores',          sessions: 29,    conv: 0.00 },
+  { country: 'Malta', pop: 0.5,          store: 'EU stores',          sessions: 22,    conv: 9.09 },
+  { country: 'Cyprus', pop: 0.9,         store: 'EU stores',          sessions: 9,     conv: 0.00 },
+  { country: 'Switzerland', pop: 8.7,    store: 'Non-EU',             sessions: 174,   conv: 2.29 },
+  { country: 'Norway', pop: 5.4,         store: 'Non-EU',             sessions: 127,   conv: 1.57 },
+];
+
+// Compute weighted average conversion
+const totalSessionsAll = data.reduce((s,r) => s + r.sessions, 0);
+const weightedAvgConv = data.reduce((s,r) => s + r.sessions * r.conv, 0) / totalSessionsAll;
+
+// Attach derived metrics to each row
+data.forEach(r => {
+  r.perfIndex    = Math.round((r.conv / weightedAvgConv) * 100);
+  r.missedOrders = Math.round(r.sessions * (r.conv - weightedAvgConv) / 100);
+  const fkey = r.country + '||' + r.store;
+  r.finData = fin[fkey] || null;
+});
+
+const SMALL = 300;
+const maxS = Math.max(...data.map(r => r.sessions));
+const maxC = Math.max(...data.map(r => r.conv));
+
+const totalS = data.reduce((s,r) => s + r.sessions, 0);
+const wavg = data.reduce((s,r) => s + r.sessions * r.conv, 0) / totalS;
+document.getElementById('wavg').textContent = wavg.toFixed(2) + '%';
+document.getElementById('visible-count').textContent = data.length;
+
+function classify(r) {
+  if (r.sessions < SMALL) return 'small';
+  if (r.conv >= 4.5)       return 'strong';
+  if (r.sessions >= 3000 && r.conv < 3.0) return 'warn';
+  if (r.conv < 2.0)        return 'low';
+  return 'ok';
+}
+
+const statusDef = {
+  strong: ['b-strong', 'Strong'],
+  warn:   ['b-warn',   'Under-performing'],
+  low:    ['b-low',    'Low conv.'],
+  small:  ['b-small',  'Small vol.'],
+  uk:     ['b-uk',     'UK store'],
+  noneu:  ['b-noneu',  'Non-EU'],
+  ok:     ['b-ok',     'Performing'],
+};
+
+const convColor = { strong: '#1a6644', warn: '#c47a00', low: '#c0392b', small: '#aaa', uk: '#185fa5', noneu: '#6b46c1', ok: '#aaa' };
+
+const filterFn = {
+  all:    () => true,
+  strong: r => classify(r) === 'strong',
+  warn:   r => classify(r) === 'warn',
+  low:    r => classify(r) === 'low',
+  small:  r => classify(r) === 'small',
+};
+
+let currentFilter = 'all';
+let sortCol = 'sessions';
+let sortDir = 'desc';
+
+function sortData(arr) {
+  return [...arr].sort((a, b) => {
+    const av = sortCol === 'country' ? a.country : sortCol === 'store' ? a.store : sortCol === 'sessions' ? a.sessions : sortCol === 'conv' ? a.conv : sortCol === 'perfIndex' ? a.perfIndex : sortCol === 'missedOrders' ? a.missedOrders : sortCol === 'pop' ? a.pop : ['orders','aov','gp','gpPerOrd','adCost','adPerOrd'].includes(sortCol) ? (a.finData ? a.finData[sortCol] || 0 : 0) : a.conv;
+    const bv = sortCol === 'country' ? b.country : sortCol === 'store' ? b.store : sortCol === 'sessions' ? b.sessions : sortCol === 'conv' ? b.conv : sortCol === 'perfIndex' ? b.perfIndex : sortCol === 'missedOrders' ? b.missedOrders : sortCol === 'pop' ? b.pop : ['orders','aov','gp','gpPerOrd','adCost','adPerOrd'].includes(sortCol) ? (b.finData ? b.finData[sortCol] || 0 : 0) : b.conv;
+    if (typeof av === 'string') return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    return sortDir === 'asc' ? av - bv : bv - av;
+  });
+}
+
+function updateHeaders() {
+  document.querySelectorAll('thead th.sortable').forEach(th => {
+    const col = th.dataset.col;
+    th.classList.toggle('sorted', col === sortCol);
+    const arrow = th.querySelector('.sort-arrow');
+    if (col === sortCol) {
+      arrow.textContent = sortDir === 'asc' ? '↑' : '↓';
+      arrow.style.opacity = 1;
+    } else {
+      arrow.textContent = '↕';
+      arrow.style.opacity = 0.35;
+    }
+  });
+}
+
+function renderFin(f) {
+  if (!f) return '<td class="fin-col" colspan="6" style="color:var(--muted);font-size:11px;text-align:center;">—</td>';
+  const gpCls = f.gp > 10000 ? 'gp-high' : f.gp < 2000 ? 'gp-low' : '';
+  const gpOrdCls = f.gpPerOrd >= 40 ? 'gp-high' : f.gpPerOrd < 25 ? 'gp-low' : '';
+  const adCls = f.adPerOrd >= 12 ? 'ad-high' : (f.adPerOrd > 0 && f.adPerOrd <= 8) ? 'ad-low' : '';
+  return '<td class="fin-col">' + f.orders.toLocaleString() + '</td>' +
+    '<td class="fin-col">€' + f.aov + '</td>' +
+    '<td class="fin-col ' + gpCls + '">€' + f.gp.toLocaleString() + '</td>' +
+    '<td class="fin-col ' + gpOrdCls + '">€' + f.gpPerOrd + '</td>' +
+    '<td class="fin-col">€' + f.adCost.toLocaleString() + '</td>' +
+    '<td class="fin-col ' + adCls + '">' + (f.adPerOrd > 0 ? '€' + f.adPerOrd : '—') + '</td>';
+}
+
+function render() {
+  const filtered = sortData(data.filter(filterFn[currentFilter]));
+  updateHeaders();
+  document.getElementById('visible-count').textContent = filtered.length;
+
+  const tbody = document.getElementById('tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="16" class="no-results">No countries match this filter.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((r, i) => {
+    const status = classify(r);
+    const [badgeClass, label] = statusDef[status];
+    const sw = Math.max(2, Math.round((r.sessions / maxS) * 100));
+    const cw = Math.max(2, Math.round((r.conv    / maxC) * 100));
+    const cc = convColor[status];
+    const badgeHTML = `<span class="badge ${badgeClass}">${label}</span>`;
+    const storeStyle = r.store === 'Non-EU'
+      ? 'font-size:12px; color:#6b46c1; font-weight:500;'
+      : r.store !== 'EU stores'
+      ? 'font-size:12px; color:#185fa5; font-weight:500;'
+      : 'font-size:12px; color:var(--muted);';
+
+    const commentaryKey = r.store === 'Envelopes.co.uk' ? 'United Kingdom (Envelopes.co.uk)'
+      : r.store === 'PostalPackaging.com' ? 'United Kingdom (PostalPackaging.com)'
+      : r.country;
+
+    const hasDetail = !!commentary[commentaryKey];
+
+    return `<tr class="data-row${hasDetail ? ' has-detail' : ''}" data-key="${commentaryKey}" data-idx="${i}">
+      <td class="rank">${i + 1}</td>
+      <td class="country">${r.country}${hasDetail ? '<span class="expand-icon">▶</span>' : ''}</td>
+      <td><span style="${storeStyle}">${r.store}</span></td>
+      <td class="num">${r.sessions.toLocaleString()}</td>
+      <td class="num" style="color:var(--muted);">${r.pop ? r.pop.toFixed(1) : '—'}</td>
+      <td class="num">${r.conv.toFixed(2)}%</td>
+      ${renderFin(r.finData)}
+      <td class="index-col ${r.perfIndex >= 120 ? 'idx-high' : r.perfIndex <= 80 ? 'idx-low' : 'idx-mid'}">${r.perfIndex}</td>
+      <td class="missed-col ${r.missedOrders > 0 ? 'missed-pos' : r.missedOrders < 0 ? 'missed-neg' : 'missed-neu'}">${r.missedOrders > 0 ? '+' : ''}${r.missedOrders.toLocaleString()}</td>
+      <td class="bars">
+        <div class="bar-row">
+          <span class="bar-label">S</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${sw}%; background:#c8c4ba;"></div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">C</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${cw}%; background:${cc};"></div></div>
+        </div>
+      </td>
+      <td>${badgeHTML}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.f;
+    render();
+  });
+});
+
+document.querySelectorAll('thead th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) {
+      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortCol = col;
+      sortDir = col === 'country' || col === 'store' ? 'asc' : col === 'missedOrders' ? 'asc' : 'desc';
+    }
+    render();
+  });
+});
+const commentary = {
+  'Germany': { verdict: 'Low conversion, premium value — reframe the strategy', detail: 'Germany converts at only 1.56% but delivers €63.60 GP per order — the highest of any market in the portfolio, nearly three times GB and almost double France. The low conversion rate is not a sign of a broken market — it reflects genuinely different buying behaviour. German B2B buyers research extensively, compare aggressively, and rarely purchase on a first visit. But when they do buy, they buy big (€95 AOV). The strategic error would be to treat Germany like a broken France. It is a premium acquisition market that requires patience, high-intent targeting, and localisation investment rather than volume-based optimisation.', recs: ['Reframe PPC strategy: Accept a higher cost-per-click in Germany — each converted order is worth €63.60 GP. A CPC that would be uneconomic in GB or Poland is entirely justified here. Use RLSA (remarketing lists for search) to recapture the comparison shoppers who browse without converting.', 'Payment methods: Rechnung (invoice/pay later) is near-mandatory in German B2B. SEPA direct debit and net-30 terms are expected. This is likely the single highest-leverage localisation fix available.', 'Trust signals: Ensure a full Impressum (legal notice), clear Widerrufsrecht (cancellation policy), and German-language customer service are visible. Absence of any of these is an immediate trust failure.', 'Language quality: German buyers are acutely sensitive to non-native copy — particularly in product descriptions and checkout flow.', 'VAT display: Show prices both ex- and inc-VAT, clearly labelled. Standard expectation in German B2B.'] },
+  'France': { verdict: 'Strong performer', detail: 'France converts at 5.49% with 13,547 sessions — a strong result for a large, competitive market. French B2B buyers are less price-anchored than German counterparts and more brand/relationship-driven once trust is established. The large SME base in France generates consistent envelope and packaging demand, and ecommerce B2B adoption has accelerated post-2020. The conversion rate suggests your offering and localisation are working well here.', recs: ['Protect and grow: France is a high-value market — ensure French-language content, support, and checkout remain well-maintained as the business scales.', 'Upsell opportunity: High-converting French visitors may respond well to volume discount prompts or account-based pricing nudges at checkout.', 'Carte Bancaire: CB is the dominant French card network — ensure it is supported. B2B buyers may also expect virement bancaire (bank transfer) as an option.'] },
+  'Spain': { verdict: 'Home market advantage', detail: 'Spain converts at 4.12% with the second-highest session volume. As Enveseur\'s home market, brand recognition, established SEO, and the Spanish warehouse operation all contribute. Ecommerce B2B adoption in Spain has grown strongly but remains slightly behind northern European peers. The conversion rate is solid but likely benefits from the home market halo — worth monitoring whether the same rate is achievable in other markets.', recs: ['Leverage warehouse proximity: Spanish customers benefit from faster delivery — make this a visible selling point in product and checkout pages.', 'Account-based growth: Spain\'s B2B market responds well to direct account relationships. Consider whether a Spanish-facing account manager or live chat in Spanish would lift conversion further.', 'Watch for cannibalisation: With Enveseur SL and Dashpac both potentially active in Spain, ensure store positioning is clearly differentiated.'] },
+  'Italy': { verdict: 'Below potential', detail: 'Italy has the fourth-highest session volume but converts at only 2.66% — well below what its size and ecommerce maturity would suggest. Italian B2B procurement has traditionally been slow to digitise: trade relationships, phone-based ordering, and in-person supplier visits remain common, particularly in SME segments. There is also meaningful regional variation — northern Italy (Milan, Turin) is considerably more digitally advanced than the south. The low conversion likely reflects a combination of market maturity and localisation gaps.', recs: ['Localisation review: Italian B2B copy needs to feel native — informal or poorly translated Italian is a significant trust barrier.', 'Payment flexibility: Bonifico bancario (bank transfer) is standard in Italian B2B. Ensure this is offered at checkout.', 'Target northern Italy: Consider whether campaigns or SEO can be weighted toward Milan, Turin and Bologna where digital B2B adoption is strongest.', 'Trust building: Italian buyers respond well to testimonials, case studies, and visible Italian contact details.'] },
+  'Poland': { verdict: 'Price-sensitive, high potential', detail: 'Poland generates strong session volume (8,537) but converts at only 2.29%. The Polish ecommerce market is growing rapidly but it is highly price-sensitive. Polish B2B buyers comparison-shop aggressively and local packaging suppliers provide strong competition on price. There may also be a currency perception issue: if prices feel expensive relative to local alternatives, Polish buyers will bounce without converting.', recs: ['Pricing review: Audit your Poland-facing prices against local competitors. Even a small perceived premium can cause abandonment in this market.', 'PLN display: Consider showing prices in Polish Zloty alongside EUR — foreign currency pricing creates friction and price ambiguity.', 'Volume incentives: Polish B2B buyers respond strongly to quantity discounts — ensure these are visible early in the browse journey, not just at checkout.', 'Local trust signals: A Polish-language contact option or Polish business registration reference may help conversion.'] },
+  'Netherlands': { verdict: 'Excellent — high efficiency', detail: 'The Netherlands punches well above its weight: 7,366 sessions from a population of just 17.9M, converting at 6.85%. Dutch ecommerce penetration is the highest in the EU at 93%, and Dutch B2B buyers are efficient, decisive, and comfortable purchasing online. The combination of high digital maturity and a dense commercial economy (Rotterdam port, Amsterdam business hub) creates strong natural demand. This is a model market for what good looks like.', recs: ['Scale investment: Given the efficiency here, any incremental spend on Dutch SEO or paid traffic is likely to yield strong returns.', 'Dutch-language content: Ensure product descriptions and checkout are in fluent Dutch.', 'iDEAL payment: iDEAL is the dominant Dutch online payment method. If not already supported, adding it could further lift conversion.'] },
+  'Belgium': { verdict: 'Best converter, high volume', detail: 'Belgium delivers the highest conversion rate of any meaningful-volume country at 7.42%. Brussels and Antwerp are major commercial hubs with dense B2B activity, and Belgian buyers are digitally sophisticated (88% ecommerce penetration). The bilingual nature of the market (French/Flemish Dutch) means serving both language groups well is important — but the data suggests this is working.', recs: ['Protect quality: Ensure both French and Dutch (Flemish) content remains well-maintained.', 'Bancontact payment: Bancontact is the dominant Belgian payment method — adding it could unlock further conversion.', 'Growth opportunity: Given the efficiency here, there is a strong case for increased visibility investment.'] },
+  'Ireland': { verdict: 'Most efficient market in the portfolio', detail: 'Ireland converts at 7.05% from 2,819 sessions — exceptional by any measure for a population of just 5.1M. The Irish market is English-language, has 91% ecommerce penetration, and a very high density of SMEs and multinational European HQs in Dublin. These buyers are digitally confident and used to purchasing from EU suppliers online.', recs: ['Invest in Irish visibility: Given the conversion efficiency, increasing session volume here through SEO or Google Ads would yield strong ROI.', 'Post-Brexit positioning: Irish businesses actively seeking EU alternatives since 2021 — this is a structural tailwind worth exploiting explicitly in messaging.'] },
+  'Sweden': { verdict: 'Below Nordic expectation', detail: 'Sweden has high ecommerce maturity (89%) yet converts at only 3.51% — below Denmark (5.95%) and well below Ireland and Netherlands. Sweden has a more competitive domestic packaging market with established local players, and Swedish buyers tend to be methodical and loyalty-driven. The gap vs other Nordic markets is worth investigating.', recs: ['Competitive audit: Review Swedish-market pricing against local competitors including Papyrus Sweden.', 'SEK pricing: Swedish Krona display alongside EUR reduces friction.', 'Klarna: Originated in Sweden with very high adoption — if not already offered, this could be impactful.', 'Language: Swedish-language product content is important — Swedish buyers are less tolerant of English-only experiences than Danish peers.'] },
+  'Hungary': { verdict: 'Solid, above expectation', detail: 'Hungary converts at 4.02% with 2,611 sessions — a solid result for a market with 74% ecommerce penetration. The Slovak warehouse likely helps with delivery times, which is a genuine competitive advantage over non-local suppliers.', recs: ['HUF pricing: Consider displaying prices in Hungarian Forint alongside EUR.', 'Delivery messaging: Proximity to the Slovak warehouse is a genuine advantage — fast delivery messaging targeted at Hungarian buyers could lift conversion further.'] },
+  'Denmark': { verdict: 'Strong — high efficiency', detail: 'Denmark converts at 5.95% from 1,997 sessions — very strong for a population of just 5.9M. Danish ecommerce penetration is 92% and Danish B2B buyers are decisive and digitally confident. The pattern is consistent with Netherlands and Ireland: small, digitally mature markets with high commercial density convert very well.', recs: ['MobilePay: Denmark\'s dominant mobile payment method, widely used in B2B. Consider adding it.', 'DKK pricing: Danish Krone display alongside EUR is expected.', 'Scale carefully: Given conversion efficiency, incremental SEO or Google Ads spend targeted at Denmark would yield strong returns.'] },
+  'Austria': { verdict: 'Underperforming for maturity', detail: 'Austria has 83% ecommerce penetration and a high-income, digitally mature market — yet converts at only 2.91%. As a German-speaking market it shares many of Germany\'s structural buying behaviours: comparison shopping and invoice payment expectations. Austria is often treated as an extension of the German market but has distinct characteristics and local competitors. The conversion gap vs market maturity is a flag.', recs: ['Do not treat as Germany: Austrian buyers notice when served German-market content. Ensure Austrian-specific trust signals (.at references, Austrian VAT, Austrian contact) are present.', 'EPS payment: EPS (Electronic Payment Standard) is the dominant Austrian online banking payment method — essential for B2B conversion.', 'Investigate funnel: Understanding whether drop-off is at browse or checkout will clarify whether this is a competition or localisation problem.'] },
+  'Finland': { verdict: 'Modest but reasonable', detail: 'Finland converts at 3.23% with 1,793 sessions. Finnish ecommerce penetration is high (87%) but Finland is a relatively small, price-aware market with a preference for established supplier relationships. Nordic buyers generally take longer to convert the first time but tend to be loyal once trust is established.', recs: ['Finnish-language content: Finnish buyers strongly prefer native-language experiences.', 'Verkkopankki: Finnish B2B buyers commonly pay via bank transfer through their bank\'s online portal — ensure this is supported.', 'Retargeting: Finnish buyers may require more touchpoints before first purchase — retargeting campaigns may help improve conversion rate over time.'] },
+  'Czechia': { verdict: 'Punching above weight', detail: 'Czechia generates 5,159 sessions from a population of 10.9M — 473 per million, one of the strongest reach figures in the dataset — and converts at 4.16%. Czech ecommerce is mature (82%) and B2B digital adoption is well-established. This is one of the stronger balanced performances: good reach and good conversion together.', recs: ['CZK pricing: Czech Koruna display is important — EUR-only pricing creates friction.', 'Czech-language content: Ensure product and checkout copy is in fluent Czech.', 'Scale opportunity: Given strong per-capita reach and conversion, this market may reward further investment.'] },
+  'Slovakia': { verdict: 'Highest reach per capita', detail: 'Slovakia generates the highest sessions-per-million of any country at 823 — extraordinary for a 5.5M population. This is almost certainly connected to the Slovak warehouse: local SEO, delivery advantages, and possibly direct customer relationships built through warehouse activity. Conversion at 3.55% is borderline but acceptable given the volume.', recs: ['Leverage warehouse: Make the Slovak warehouse a visible selling point — same-day or next-day delivery from a local facility is a major competitive advantage.', 'EUR is native: Slovakia uses the Euro, removing currency friction entirely.', 'Convert the browsers: Moving conversion from 3.55% to 4.5% would have material impact — checkout optimisation and payment options are worth reviewing.'] },
+  'Portugal': { verdict: 'Solid performer', detail: 'Portugal converts at 4.05% with 3,945 sessions — a strong result for a market of 10.2M with 74% ecommerce penetration. Portuguese B2B ecommerce is growing steadily and the result suggests good product-market fit.', recs: ['European Portuguese: Ensure copy is localised for Portugal specifically, not Brazilian Portuguese.', 'MB Way / Multibanco: These are the dominant Portuguese payment methods for online purchases. Supporting them could lift conversion meaningfully.', 'Lisbon/Porto focus: B2B demand concentrates in these two cities — geo-targeted content or ads may be efficient.'] },
+  'Croatia': { verdict: 'Small, low maturity', detail: 'Croatia generates 568 sessions with 2.28% conversion. Ecommerce penetration is 68% and the B2B digital market is less developed than western peers. As a relatively recent EU member with a smaller economy, the market opportunity is limited in the near term.', recs: ['No immediate action required: Volume is insufficient to prioritise localisation investment.', 'Monitor trend: As Croatian ecommerce matures, the sessions figure will be worth watching.'] },
+  'Slovenia': { verdict: 'Small but reasonable', detail: 'Slovenia generates 470 sessions from a population of just 2.1M — a decent reach figure — with 2.55% conversion. The proximity to the Slovak warehouse likely helps with delivery competitiveness.', recs: ['Delivery advantage: Slovak warehouse proximity means competitive delivery times — worth surfacing in Slovenian-facing content.', 'Low investment priority: Market size limits upside, but existing performance is acceptable.'] },
+  'Lithuania': { verdict: 'Underperforming Baltics', detail: 'Lithuania has 259 sessions and 1.15% conversion — the lowest conversion of any country with meaningful sessions. Baltic ecommerce penetration is reasonable at 78% but there may be localisation gaps or pricing perception issues keeping conversion suppressed.', recs: ['Localisation check: Lithuanian-language content or lack thereof may be suppressing trust.', 'Low priority: Session volume is too low to warrant significant investment without further evidence of demand.'] },
+  'Latvia': { verdict: 'Minimal presence', detail: 'Latvia generates 233 sessions and 1.71% conversion. Similar profile to Lithuania — small Baltic market, reasonable ecommerce penetration but limited session volume and below-average conversion. Not a priority market currently.', recs: ['Monitor passively: No action warranted at current volume.'] },
+  'Estonia': { verdict: 'Negligible volume', detail: 'Estonia has 77 sessions and 1.29% conversion — statistically unreliable. Notably, Estonia has the highest ecommerce penetration of the Baltic states at 87%, so the extremely low session volume suggests limited organic visibility rather than a demand problem.', recs: ['SEO gap likely: The disconnect between high ecommerce maturity and near-zero sessions suggests Estonia is simply not being reached organically.', 'Low priority currently, but worth noting as a market where modest visibility investment could yield disproportionate results.'] },
+  'Romania': { verdict: 'Major untapped market', detail: 'Romania is the most striking blind spot in the dataset. At 19 million people — one of the EU\'s largest populations — Romania generates only 57 sessions: 3 per million. Ecommerce penetration is lower at 61% but growing rapidly, and Bucharest in particular has a fast-developing B2B digital economy. The near-total absence of sessions points to a visibility problem rather than a lack of demand.', recs: ['Investigate visibility: Romania is almost certainly not being reached through organic search — a Romanian-language SEO audit would be the logical first step.', 'Long-term opportunity: As ecommerce penetration grows toward the EU average, this market will become increasingly attractive.', 'RON pricing: Romanian Leu display would reduce friction for Romanian buyers.'] },
+  'Luxembourg': { verdict: 'Tiny market, high maturity', detail: 'Luxembourg has a population of just 0.7M but 92% ecommerce penetration. The 50 sessions and 2% conversion are unsurprising given the market size. Luxembourg\'s B2B market is dominated by financial services and EU institutions.', recs: ['No broad action needed: Market size makes this a low priority.', 'Niche opportunity: If EU institution procurement is a target, Luxembourg could be worth a focused approach.'] },
+  'Bulgaria': { verdict: 'Zero conversion — investigate', detail: 'Bulgaria generates 41 sessions but zero conversions. With 57% ecommerce penetration the market is less mature, but 41 sessions with no conversions at all may indicate a specific barrier — payment method incompatibility, currency friction, or a checkout error for Bulgarian visitors.', recs: ['Check for checkout errors: Zero conversion from 41 sessions could indicate a technical barrier rather than purely a market maturity issue.', 'BGN currency: Bulgaria uses the Bulgarian Lev, pegged to the Euro — EUR pricing should be acceptable but worth verifying.', 'Low priority: Market size and maturity limit near-term upside.'] },
+  'Greece': { verdict: 'Underserved large market', detail: 'Greece has a population of 10.4M but generates only 29 sessions — essentially invisible in the data. Ecommerce penetration is 62% and growing. The near-zero session volume points squarely at a visibility gap. Greek businesses do buy packaging and envelopes online — they are simply not finding Enveseur.', recs: ['Greek-language SEO: Near-zero sessions from a 10M-person market is a visibility problem. Greek-language content and local keyword targeting would be the starting point.', 'Payment methods: Viva Wallet and bank transfer are common in Greek B2B — card-only checkout will limit conversion.', 'Medium-term opportunity: A Greek-language landing page investment could yield meaningful returns over 12-18 months.'] },
+  'Malta': { verdict: 'Statistically irrelevant', detail: 'Malta shows 9.09% conversion from 22 sessions — just 2 conversions. The rate is meaningless at this volume. Malta is English-speaking with 83% ecommerce penetration. Small businesses here naturally purchase from UK or EU suppliers online.', recs: ['No action needed: Volume is too low to draw conclusions or justify investment.'] },
+  'Cyprus': { verdict: 'No data to act on', detail: 'Cyprus generates 9 sessions and zero conversions. Population of 0.9M, English-speaking, 75% ecommerce penetration. The market is tiny and the session volume offers no basis for conclusions.', recs: ['No action needed at current volume.'] },
+  'United Kingdom (Envelopes.co.uk)': { verdict: 'Strong home market', detail: 'Envelopes.co.uk converts at 5.58% from 7,728 sessions — strong performance in the UK\'s highly competitive and mature ecommerce market (92% penetration). The brand is clearly established and converting well. Post-Brexit, UK businesses have largely settled into EU-vs-UK supplier decisions and Envelopes.co.uk appears well-positioned on the UK side.', recs: ['Protect market position: Continued investment in SEO and customer retention is warranted given the strong base.', 'Account programme: UK B2B buyers respond well to trade accounts and credit terms — if not already in place, this is worth developing.', 'Compare vs PostalPackaging.com: The significant conversion gap between the two UK stores (5.58% vs 2.55%) is worth a dedicated funnel analysis.'] },
+  'Switzerland': { verdict: 'Low visibility, strong potential', detail: 'Switzerland generates only 174 sessions with 2.29% conversion — the session volume points to a visibility problem rather than a conversion one. Switzerland is a wealthy, highly digitised market with strong B2B packaging demand, but it sits outside the EU which creates VAT and customs complexity for cross-border sales. Your EU competitors are active here, and local Swiss suppliers (Elco, Büroline) are well-established. The low session count suggests Swiss businesses are simply not finding you through organic search — Swiss-targeted SEO or a .ch presence would be the logical starting point. Note that Switzerland is trilingual (German, French, Italian) and buyers expect content in their own language.', recs: ['VAT/customs clarity: Swiss buyers need to understand clearly what they will pay including Swiss VAT and any import duties — ambiguity here kills conversion.', 'Language: Switzerland is German-speaking (65%), French (23%), Italian (8%) — serving German-Swiss content at minimum is important.', 'CHF pricing: Swiss Franc display reduces friction — EUR pricing is usable but CHF is preferred.', 'Competitive gap: If competitors are performing well here and you are not, an SEO audit against competitor keyword visibility in Switzerland would identify the gap quickly.'] },
+  'Norway': { verdict: 'Newly launched — too early to judge', detail: 'Norway has 127 sessions and 1.57% conversion. Given this is a recently launched store, both figures are entirely expected — new stores typically take 3-6 months to build meaningful organic visibility and customer trust. Norway is a strong target market: high income, 91% ecommerce penetration, and a well-developed B2B digital economy. The Viking/Scandinavian commercial culture favours efficient online purchasing once a supplier is trusted. The launch baseline is not a concern — the trajectory over the next two quarters is what matters.', recs: ['Benchmark now: Record current session and conversion figures as your launch baseline — month-on-month tracking from here will be the meaningful metric.', 'Norwegian Krone: NOK pricing is important — Norway uses NOK, not EUR, and EUR-only pricing will create friction.', 'Vipps payment: Vipps is Norway\'s dominant mobile payment platform with very high B2B adoption — essential to support.', 'Trust building: New market entry requires visible trust signals — Norwegian contact details, Norwegian-language returns policy, and customer reviews will all help conversion as volume grows.', 'Non-EU complexity: Norway is in the EEA but not the EU — ensure VAT and delivery terms are clearly communicated for Norwegian buyers.'] },
+    'United Kingdom (PostalPackaging.com)': { verdict: 'Same market, weaker conversion', detail: 'PostalPackaging.com converts at 2.55% from 3,335 sessions — significantly below Envelopes.co.uk\'s 5.58% in the same UK market. Since market conditions are identical, the gap must be explained by differences in product mix, audience intent, brand recognition, or site experience. PP visitors may be arriving with broader, less transactional intent, or the brand may carry less recognition and trust than Envelopes.co.uk.', recs: ['Funnel comparison: Run a direct comparison of the two stores\' funnel drop-off points — add-to-cart rate, checkout entry, checkout completion.', 'Keyword intent audit: Review the search terms driving PP traffic vs Envelopes.co.uk — if PP attracts more informational queries, conversion will naturally be lower.', 'Brand investment: Trust-building elements (reviews, case studies, clear returns policy) may close some of the gap.', 'Consider positioning: If the two stores overlap significantly in product range, there may be a cannibalisation issue worth addressing.'] },
+};
+
+// Expandable rows
+document.getElementById('tbody').addEventListener('click', function(e) {
+  const row = e.target.closest('tr.has-detail');
+  if (!row) return;
+  const key = row.getAttribute('data-key');
+  const idx = row.getAttribute('data-idx');
+  const detailId = 'detail-' + idx;
+  const existing = document.getElementById(detailId);
+  if (existing) {
+    existing.remove();
+    row.classList.remove('expanded');
+    return;
+  }
+  document.querySelectorAll('.detail-row').forEach(r => r.remove());
+  document.querySelectorAll('.expanded').forEach(r => r.classList.remove('expanded'));
+  const c = commentary[key];
+  if (!c) return;
+  row.classList.add('expanded');
+  const recsHTML = c.recs.map(r => `<li>${r}</li>`).join('');
+  const detailRow = document.createElement('tr');
+  detailRow.className = 'detail-row';
+  detailRow.id = detailId;
+  detailRow.innerHTML = `<td colspan="16"><div class="detail-inner"><div class="detail-verdict">${c.verdict}</div><div class="detail-text">${c.detail}</div><ul class="detail-recs">${recsHTML}</ul></div></td>`;
+  row.insertAdjacentElement('afterend', detailRow);
+});
+
+render();
+
+
+// ---- CHOROPLETH MAP ----
+const mapBtn = document.getElementById('map-btn');
+const mapPanel = document.getElementById('map-panel');
+const closeMapBtn = document.getElementById('close-map');
+const mapMetricSel = document.getElementById('map-metric');
+const tooltip = document.getElementById('map-tooltip');
+
+const euData = {
+  "276": { name:"Germany",     sessions:18460, conv:1.56, pop:84.4  },
+  "724": { name:"Spain",       sessions:15093, conv:4.12, pop:47.4  },
+  "250": { name:"France",      sessions:13547, conv:5.49, pop:68.4  },
+  "380": { name:"Italy",       sessions:12112, conv:2.66, pop:58.9  },
+  "616": { name:"Poland",      sessions:8537,  conv:2.29, pop:38.0  },
+  "528": { name:"Netherlands", sessions:7366,  conv:6.85, pop:17.9  },
+  "203": { name:"Czechia",     sessions:5159,  conv:4.16, pop:10.9  },
+  "703": { name:"Slovakia",    sessions:4527,  conv:3.55, pop:5.5   },
+  "620": { name:"Portugal",    sessions:3945,  conv:4.05, pop:10.2  },
+  "56":  { name:"Belgium",     sessions:2924,  conv:7.42, pop:11.7  },
+  "752": { name:"Sweden",      sessions:2900,  conv:3.51, pop:10.5  },
+  "372": { name:"Ireland",     sessions:2819,  conv:7.05, pop:5.1   },
+  "348": { name:"Hungary",     sessions:2611,  conv:4.02, pop:9.7   },
+  "208": { name:"Denmark",     sessions:1997,  conv:5.95, pop:5.9   },
+  "40":  { name:"Austria",     sessions:1821,  conv:2.91, pop:9.1   },
+  "246": { name:"Finland",     sessions:1793,  conv:3.23, pop:5.5   },
+  "191": { name:"Croatia",     sessions:568,   conv:2.28, pop:3.9   },
+  "705": { name:"Slovenia",    sessions:470,   conv:2.55, pop:2.1   },
+  "440": { name:"Lithuania",   sessions:259,   conv:1.15, pop:2.8   },
+  "428": { name:"Latvia",      sessions:233,   conv:1.71, pop:1.8   },
+  "233": { name:"Estonia",     sessions:77,    conv:1.29, pop:1.4   },
+  "642": { name:"Romania",     sessions:57,    conv:3.50, pop:19.0  },
+  "442": { name:"Luxembourg",  sessions:50,    conv:2.00, pop:0.7   },
+  "100": { name:"Bulgaria",    sessions:41,    conv:0.00, pop:6.1   },
+  "300": { name:"Greece",      sessions:29,    conv:0.00, pop:10.4  },
+  "470": { name:"Malta",       sessions:22,    conv:9.09, pop:0.5   },
+  "196": { name:"Cyprus",      sessions:9,     conv:0.00, pop:0.9   },
+  "826": { name:"United Kingdom", sessions:11063, conv:4.38, pop:67.7 },
+  "756": { name:"Switzerland", sessions:174,   conv:2.29, pop:8.7,  store:"Non-EU" },
+  "578": { name:"Norway",      sessions:127,   conv:1.57, pop:5.4,  store:"Non-EU" },
+};
+
+// Compute sessPerM
+Object.values(euData).forEach(d => { d.sessPerM = d.sessions / d.pop; });
+
+let mapLoaded = false;
+
+function getMetricVal(d, metric) {
+  if (!d) return null;
+  return metric === 'conv' ? d.conv : metric === 'sessions' ? d.sessions : d.sessPerM;
+}
+
+function colorScale(val, min, max, metric) {
+  if (val === null || val === undefined) return '#ddd';
+  const t = Math.max(0, Math.min(1, (val - min) / (max - min)));
+  if (metric === 'conv') {
+    // red -> amber -> green
+    if (t < 0.5) {
+      const u = t * 2;
+      return `rgb(${Math.round(220 + (239-220)*u)},${Math.round(60 + (159-60)*u)},${Math.round(60 + (39-60)*u)})`;
+    } else {
+      const u = (t - 0.5) * 2;
+      return `rgb(${Math.round(239 + (29-239)*u)},${Math.round(159 + (158-159)*u)},${Math.round(39 + (117-39)*u)})`;
+    }
+  } else {
+    // light blue -> deep blue
+    return `rgb(${Math.round(214 - 169*t)},${Math.round(230 - 112*t)},${Math.round(248 - 107*t)})`;
+  }
+}
+
+function drawMap(metric) {
+  const container = document.getElementById('map-container');
+  const vals = Object.values(euData).map(d => getMetricVal(d, metric)).filter(v => v !== null);
+  const minV = Math.min(...vals), maxV = Math.max(...vals);
+
+  // Update legend
+  const grad = document.getElementById('legend-gradient');
+  if (metric === 'conv') {
+    grad.style.background = 'linear-gradient(to right, #dc3c3c, #ef9f27, #1d9e75)';
+  } else {
+    grad.style.background = 'linear-gradient(to right, #d6e6f8, #0c447c)';
+  }
+  const legendLabel = document.getElementById('legend-label');
+  const legendTicks = document.getElementById('legend-ticks');
+  const legendGrad = document.getElementById('legend-gradient');
+  if (metric === 'conv') {
+    legendLabel.textContent = 'Conversion rate';
+    legendGrad.style.background = 'linear-gradient(to right, #dc3c3c, #ef9f27, #1d9e75)';
+    legendTicks.innerHTML = '<span>0%</span><span>2.5%</span><span>5%</span><span>7.5%</span><span>9.1%</span>';
+  } else if (metric === 'sessions') {
+    legendLabel.textContent = 'Sessions (raw)';
+    legendGrad.style.background = 'linear-gradient(to right, #d6e6f8, #0c447c)';
+    legendTicks.innerHTML = '<span>9</span><span>4,600</span><span>9,200</span><span>13,800</span><span>18,460</span>';
+  } else {
+    legendLabel.textContent = 'Sessions per million population';
+    legendGrad.style.background = 'linear-gradient(to right, #d6e6f8, #0c447c)';
+    legendTicks.innerHTML = '<span>3</span><span>200</span><span>400</span><span>600</span><span>823</span>';
+  }
+
+  if (!mapLoaded) return; // will be called again after load
+
+  const svg = container.querySelector('svg');
+  if (!svg) return;
+
+  svg.querySelectorAll('path[data-id]').forEach(path => {
+    const id = path.getAttribute('data-id');
+    const d = euData[id] || euData[parseInt(id)+''] || euData[id.replace(/^0+/,'')];
+    const val = d ? getMetricVal(d, metric) : null;
+    path.style.fill = colorScale(val, minV, maxV, metric);
+  });
+}
+
+function buildMap() {
+  const container = document.getElementById('map-container');
+  container.innerHTML = '<p style="padding:40px; text-align:center; color:#7a7870; font-size:13px;">Loading map…</p>';
+
+  Promise.all([
+    fetch('https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js').then(() => {}),
+    fetch('https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js').then(() => {})
+  ]).catch(() => {});
+
+  // Load scripts then data
+  function loadScript(src, cb) {
+    if (document.querySelector('script[src="'+src+'"]')) { cb(); return; }
+    const s = document.createElement('script');
+    s.src = src; s.onload = cb;
+    document.head.appendChild(s);
+  }
+
+  loadScript('https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js', () => {
+    loadScript('https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js', () => {
+      fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+        .then(r => r.json())
+        .then(world => {
+          container.innerHTML = '';
+          const W = container.clientWidth || 680;
+          const H = Math.round(W * 0.75);
+
+          const svg = d3.select(container).append('svg')
+            .attr('width', '100%')
+            .attr('viewBox', `0 0 ${W} ${H}`)
+            .style('display','block');
+
+          // Europe-focused projection
+          const projection = d3.geoMercator()
+            .center([13, 50])
+            .scale(W * 0.80)
+            .translate([W * 0.48, H * 0.52]);
+
+          const path = d3.geoPath().projection(projection);
+          const countries = topojson.feature(world, world.objects.countries);
+
+          const metric = mapMetricSel.value;
+          const vals = Object.values(euData).map(d => getMetricVal(d, metric));
+          const minV = Math.min(...vals), maxV = Math.max(...vals);
+
+          svg.selectAll('path')
+            .data(countries.features)
+            .join('path')
+            .attr('data-id', d => d.id)
+            .attr('d', path)
+            .style('fill', d => {
+              const id = String(d.id);
+              const rec = euData[id] || euData[id.replace(/^0+/,'')];
+              const val = rec ? getMetricVal(rec, metric) : null;
+              return colorScale(val, minV, maxV, metric);
+            })
+            .style('stroke', '#fff')
+            .style('stroke-width', '0.4px')
+            .style('cursor', d => {
+              const id = String(d.id);
+              return (euData[id] || euData[id.replace(/^0+/,'')]) ? 'pointer' : 'default';
+            })
+            .on('mousemove', function(event, d) {
+              const id = String(d.id);
+              const rec = euData[id] || euData[id.replace(/^0+/,'')];
+              if (!rec) return;
+              const m = mapMetricSel.value;
+              const val = getMetricVal(rec, m);
+              const fmt = m === 'conv' ? val.toFixed(2)+'%' :
+                          m === 'sessions' ? val.toLocaleString() :
+                          val.toFixed(1)+'/M pop.';
+              tooltip.style.display = 'block';
+              tooltip.style.left = (event.clientX + 12) + 'px';
+              tooltip.style.top  = (event.clientY - 10) + 'px';
+              const statusInfo = {
+                strong: { label: 'Strong',           color: '#1a6644', bg: '#e8f5ee' },
+                warn:   { label: 'Under-performing', color: '#8a5a00', bg: '#fff4d6' },
+                low:    { label: 'Low conv.',         color: '#8a1f1f', bg: '#fdeaea' },
+                small:  { label: 'Small vol.',        color: '#7a7870', bg: '#f0eeea' },
+                uk:     { label: 'UK store',          color: '#185fa5', bg: '#deeaf8' },
+                noneu:  { label: 'Non-EU',            color: '#6b46c1', bg: '#f0ebff' },
+                ok:     { label: 'Performing',        color: '#4a5568', bg: '#edf0f5' },
+              };
+              function classifyRec(r) {
+                if (r.sessions < 300) return 'small';
+                if (r.conv >= 4.5) return 'strong';
+                if (r.sessions >= 3000 && r.conv < 3.0) return 'warn';
+                if (r.conv < 2.0) return 'low';
+                return 'ok';
+              }
+              const st = classifyRec(rec);
+              const si = statusInfo[st];
+              const statusPill = '<span style="display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:' + si.bg + ';color:' + si.color + ';margin-top:4px;">' + si.label + '</span>';
+              const sessPerM = rec.pop ? (rec.sessions / rec.pop).toFixed(1) : '—';
+              const fkey = rec.name + '||' + (rec.store || 'EU stores');
+              const fd = fin[fkey] || null;
+              const finLines = fd
+                ? '<br>' +
+                  '<span style="display:inline-grid;grid-template-columns:auto auto;gap:1px 10px;margin-top:4px;font-size:11px;">' +
+                  '<span style="opacity:0.7;">Orders</span><span>' + fd.orders.toLocaleString() + '</span>' +
+                  '<span style="opacity:0.7;">AOV</span><span>€' + fd.aov + '</span>' +
+                  '<span style="opacity:0.7;">GP</span><span>€' + fd.gp.toLocaleString() + '</span>' +
+                  '<span style="opacity:0.7;">GP/order</span><span>€' + fd.gpPerOrd + '</span>' +
+                  '<span style="opacity:0.7;">Ad/order</span><span>' + (fd.adPerOrd > 0 ? '€' + fd.adPerOrd : '—') + '</span>' +
+                  '</span>'
+                : '';
+              tooltip.innerHTML =
+                '<strong style="font-size:13px;">' + rec.name + '</strong>' +
+                (rec.store && rec.store !== 'EU stores' ? ' <span style="font-size:10px;opacity:0.7;">(' + rec.store + ')</span>' : '') +
+                '<br>' +
+                (m==='conv'?'Conversion':m==='sessions'?'Sessions':'Sessions/M') +
+                ': <strong>' + fmt + '</strong>' +
+                '<br>Sessions: ' + rec.sessions.toLocaleString() +
+                ' &nbsp;·&nbsp; Conv: ' + rec.conv.toFixed(2) + '%' +
+                '<br>Population: ' + (rec.pop ? rec.pop.toFixed(1) + 'M' : '—') +
+                ' &nbsp;·&nbsp; ' + sessPerM + '/M pop.' +
+                finLines + '<br>' + statusPill;
+            })
+            .on('mouseleave', () => { tooltip.style.display = 'none'; });
+
+          mapLoaded = true;
+        })
+        .catch(() => {
+          container.innerHTML = '<p style="padding:40px;text-align:center;color:#c0392b;font-size:13px;">Could not load map data. Check your connection.</p>';
+        });
+    });
+  });
+}
+
+mapBtn.addEventListener('click', () => {
+  const isOpen = mapPanel.style.display !== 'none';
+  mapPanel.style.display = isOpen ? 'none' : 'block';
+  mapBtn.classList.toggle('active', !isOpen);
+  if (!isOpen) {
+    if (!mapLoaded) buildMap();
+    mapPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
+
+closeMapBtn.addEventListener('click', () => {
+  mapPanel.style.display = 'none';
+  mapBtn.classList.remove('active');
+});
+
+mapMetricSel.addEventListener('change', () => {
+  if (mapLoaded) drawMap(mapMetricSel.value);
+  else buildMap();
+});
+// ---- END CHOROPLETH MAP ----
+
+
+// Strategy panel
+const strategyBtn = document.getElementById('strategy-btn');
+const strategyPanel = document.getElementById('strategy-panel');
+const closeStrategyBtn = document.getElementById('close-strategy');
+
+strategyBtn.addEventListener('click', () => {
+  const isOpen = strategyPanel.style.display !== 'none';
+  strategyPanel.style.display = isOpen ? 'none' : 'block';
+  strategyBtn.classList.toggle('active', !isOpen);
+  if (!isOpen) strategyPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+closeStrategyBtn.addEventListener('click', () => {
+  strategyPanel.style.display = 'none';
+  strategyBtn.classList.remove('active');
+});
+
+// Analysis panel
+const analysisBtn = document.getElementById('analysis-btn');
+const analysisPanel = document.getElementById('analysis-panel');
+const closeBtn = document.getElementById('close-analysis');
+
+const popData = [
+  ['Slovakia',    823, '#1D9E75'],
+  ['Ireland',     553, '#1D9E75'],
+  ['Czechia',     473, '#1D9E75'],
+  ['Netherlands', 412, '#1D9E75'],
+  ['Denmark',     339, '#1D9E75'],
+  ['Portugal',    387, '#1D9E75'],
+  ['Finland',     326, '#888780'],
+  ['Spain',       318, '#1D9E75'],
+  ['Belgium',     250, '#1D9E75'],
+  ['Sweden',      276, '#888780'],
+  ['Poland',      225, '#EF9F27'],
+  ['Germany',     219, '#EF9F27'],
+  ['France',      198, '#1D9E75'],
+  ['Italy',       206, '#EF9F27'],
+  ['Romania',       3, '#E24B4A'],
+  ['Greece',        3, '#E24B4A'],
+];
+
+const ecommData = [
+  ['Netherlands', 93, 6.85, '#1D9E75'],
+  ['Belgium',     88, 7.42, '#1D9E75'],
+  ['Ireland',     91, 7.05, '#1D9E75'],
+  ['Denmark',     92, 5.95, '#1D9E75'],
+  ['Germany',     87, 1.56, '#E24B4A'],
+  ['France',      82, 5.49, '#1D9E75'],
+  ['Italy',       67, 2.66, '#EF9F27'],
+  ['Spain',       72, 4.12, '#1D9E75'],
+  ['Poland',      79, 2.29, '#EF9F27'],
+  ['Austria',     83, 2.91, '#EF9F27'],
+];
+
+function buildMiniBar(container, rows, maxVal, labelKey, valKey, colorKey, suffix) {
+  container.innerHTML = rows.map(r => {
+    const pct = Math.max(2, Math.round((r[1] / maxVal) * 100));
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+      <span style="font-size:11px;color:#7a7870;width:90px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r[0]}</span>
+      <div style="flex:1;height:5px;background:#e2e0d8;border-radius:3px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;border-radius:3px;background:${r[2]};"></div>
+      </div>
+      <span style="font-size:11px;font-family:'DM Mono',monospace;width:46px;text-align:right;color:#1a1917;">${r[1]}${suffix}</span>
+    </div>`;
+  }).join('');
+}
+
+analysisBtn.addEventListener('click', () => {
+  const isOpen = analysisPanel.style.display !== 'none';
+  analysisPanel.style.display = isOpen ? 'none' : 'block';
+  analysisBtn.classList.toggle('active', !isOpen);
+  if (!isOpen) {
+    buildMiniBar(document.getElementById('pop-bars'), popData, 823, 0, 1, 2, '/M');
+    buildMiniBar(document.getElementById('ecomm-bars'), ecommData, 93, 0, 1, 3, '%');
+    analysisPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
+
+closeBtn.addEventListener('click', () => {
+  analysisPanel.style.display = 'none';
+  analysisBtn.classList.remove('active');
+});
+</script>
+</body>
+</html>
